@@ -9,7 +9,7 @@ const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 
 
-const URL = process.env.DB || "mongodb://127.0.0.1:27017/fsd13";
+const URL = process.env.DB || "mongodb://127.0.0.1:27017/quisine";
 
 
 mongoose.connect(URL)
