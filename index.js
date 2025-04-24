@@ -465,7 +465,7 @@ app.post("/reservations", authenticate, async (req, res) => {
     const reservedSeats = await Reservation.aggregate([
       {
         $match: {
-          restaurantId: new mongoose.Types.ObjectId(restaurantId), // Use `new` keyword here
+          restaurantId: new mongoose.Types.ObjectId(restaurantId),
           date,
           timeSlot,
         },
@@ -498,7 +498,38 @@ app.post("/reservations", authenticate, async (req, res) => {
     });
 
     await reservation.save();
-    res.status(201).json({ message: "Reservation created successfully", reservation });
+
+    // Send email to the user with reservation details
+    const transporter = nodemailer.createTransport({
+      host: "smtp.gmail.com",
+      port: 587,
+      secure: false,
+      auth: {
+        user: process.env.EMAIL_USER,
+        pass: process.env.EMAIL_PASS,
+      },
+    });
+
+    const mailOptions = {
+      to: req.user.email,
+      from: process.env.EMAIL_USER,
+      subject: "Reservation Confirmation",
+      text: `Dear Customer,\n\nYour reservation has been confirmed.\n\nDetails:\nRestaurant: ${restaurant.name}\nDate: ${date}\nTime Slot: ${timeSlot}:00\nGuests: ${guests}\n\nThank you for choosing our service.\n\nBest regards,\nRestaurant Reservation Team`,
+    };
+
+    transporter.sendMail(mailOptions, (error, info) => {
+      if (error) {
+        console.error("Error sending email:", error);
+        return res.status(500).json({ error: "Failed to send confirmation email" });
+      }
+      console.log("Email sent:", info.response);
+
+      // Respond with success message after email is sent
+      res.status(201).json({
+        message: "Reservation created successfully. A confirmation email has been sent to your email address.",
+        reservation,
+      });
+    });
   } catch (error) {
     console.error("Error creating reservation:", error);
     res.status(500).json({ error: "Failed to create reservation" });
