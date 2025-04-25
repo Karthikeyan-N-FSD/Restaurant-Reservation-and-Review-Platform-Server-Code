@@ -536,4 +536,14 @@ app.post("/reservations", authenticate, async (req, res) => {
   }
 });
 
+app.get("/user/bookings", authenticate, async (req, res) => {
+  try {
+    const bookings = await Reservation.find({ email: req.user.email }).populate("restaurantId");
+    res.json(bookings);
+  } catch (error) {
+    console.error("Error fetching bookings:", error);
+    res.status(500).json({ error: "Failed to fetch bookings" });
+  }
+});
+
 app.listen(3001);
