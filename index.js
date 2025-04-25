@@ -546,4 +546,22 @@ app.get("/user/bookings", authenticate, async (req, res) => {
   }
 });
 
+app.delete("/reservations/:id", authenticate, async (req, res) => {
+  try {
+    const booking = await Reservation.findOneAndDelete({
+      _id: req.params.id,
+      email: req.user.email, // Ensure the user can only delete their own bookings
+    });
+
+    if (!booking) {
+      return res.status(404).json({ error: "Booking not found or unauthorized" });
+    }
+
+    res.json({ message: "Booking canceled successfully" });
+  } catch (error) {
+    console.error("Error canceling booking:", error);
+    res.status(500).json({ error: "Failed to cancel booking" });
+  }
+});
+
 app.listen(3001);
