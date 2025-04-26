@@ -20,6 +20,7 @@ mongoose.connect(URL)
 const { Users } = require("./model/users");
 const { Restaurant } = require("./model/restaurant");
 const { Reservation } = require("./model/reservation");
+const { Review } = require("./model/review");
 
 app.use(express.json());
 app.use(cors({ origin: "*" }));
@@ -563,5 +564,38 @@ app.delete("/reservations/:id", authenticate, async (req, res) => {
     res.status(500).json({ error: "Failed to cancel booking" });
   }
 });
+
+app.get("/user/reviews", authenticate, async (req, res) => {
+  try {
+    const reviews = await Review.find({ userEmail: req.user.email }).populate("restaurantId");
+    res.json(reviews);
+  } catch (error) {
+    console.error("Error fetching user reviews:", error);
+    res.status(500).json({ error: "Failed to fetch user reviews" });
+  }
+});
+
+app.post("/reviews", authenticate, async (req, res) => {
+  const { restaurantId, rating, text } = req.body;
+
+  if (!restaurantId || !rating || !text) {
+    return res.status(400).json({ error: "Missing required fields" });
+  }
+
+  try {
+    const review = new Review({
+      restaurantId,
+      userEmail: req.user.email,
+      rating,
+      text,
+    });
+    await review.save();
+    res.status(201).json({ message: "Review submitted successfully!" });
+  } catch (error) {
+    console.error("Error submitting review:", error);
+    res.status(500).json({ error: "Failed to submit review" });
+  }
+});
+
 
 app.listen(3001);
