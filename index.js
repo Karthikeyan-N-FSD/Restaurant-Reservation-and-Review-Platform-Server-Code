@@ -113,7 +113,7 @@ app.post("/register", async (req, res) => {
     }
 
     // New user: send email first
-    transporter.sendMail(mailO, infoptions, async (error, info) => {
+    transporter.sendMail(mailOptions, infoptions, async (error, info) => {
       if (error) {
         console.error("Error sending email:", error);
         return res.status(500).json({ error: "Error sending verification email" });
