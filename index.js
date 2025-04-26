@@ -576,9 +576,9 @@ app.get("/user/reviews", authenticate, async (req, res) => {
 });
 
 app.post("/reviews", authenticate, async (req, res) => {
-  const { restaurantId, rating, text } = req.body;
+  const { restaurantId, rating, text, userName } = req.body;
 
-  if (!restaurantId || !rating || !text) {
+  if (!restaurantId || !rating || !text || !userName) {
     return res.status(400).json({ error: "Missing required fields" });
   }
 
@@ -586,6 +586,7 @@ app.post("/reviews", authenticate, async (req, res) => {
     const review = new Review({
       restaurantId,
       userEmail: req.user.email,
+      userName,
       rating,
       text,
     });
@@ -597,5 +598,17 @@ app.post("/reviews", authenticate, async (req, res) => {
   }
 });
 
+app.get("/restaurants/:id/reviews", async (req, res) => {
+  try {
+    const { id } = req.params;
+    const reviews = await Review.find({ restaurantId: id })
+      .populate("restaurantId")
+      .sort({ date: -1 });
+    res.json(reviews);
+  } catch (error) {
+    console.error("Error fetching restaurant reviews:", error);
+    res.status(500).json({ error: "Failed to fetch reviews" });
+  }
+});
 
 app.listen(3001);
