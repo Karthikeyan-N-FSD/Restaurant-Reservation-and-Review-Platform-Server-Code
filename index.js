@@ -113,7 +113,7 @@ app.post("/register", async (req, res) => {
     }
 
     // New user: send email first
-    transporter.sendMail(mailOptions, infoptions, async (error, info) => {
+    transporter.sendMail(mailOptions, async (error, info) => {
       if (error) {
         console.error("Error sending email:", error);
         return res.status(500).json({ error: "Error sending verification email" });
@@ -125,11 +125,11 @@ app.post("/register", async (req, res) => {
         password: hash,
         isVerified: false,
         verificationToken,
-        verificationExpires
+        verificationExpires,
       });
 
       return res.status(201).json({
-        message: "Registration successful! Please check your email to verify your account."
+        message: "Registration successful! Please check your email to verify your account.",
       });
     });
 
